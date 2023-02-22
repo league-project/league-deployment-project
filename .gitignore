@@ -121,3 +121,5 @@ venv-dev/
 packaged-template.yaml
 
 .DS_Store
+images/
+db/
