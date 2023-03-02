@@ -1,167 +1,184 @@
 import datetime
 import requests
-import json
 from dotenv import dotenv_values 
-import os
 from pymongo import MongoClient
 
-config = dotenv_values(".env")
-x=datetime.datetime.now()
-riotAPISession = requests.session()
-dDragonSession = requests.session()
-riotAPISession.headers.update({"X-Riot-Token": config["API_KEY"]})
-mongo = MongoClient(config["ATLAS_URL"])
-appData = mongo["data"]
-matchData = appData["match"]
+class Logic:
+    riotSession = None
+    dSession = None 
+    mongo = None
+    @staticmethod 
+    def itemImageDownload():
+        for id in Logic.itemsObject['data']:
+            image = Logic.dSession.get(f"http://ddragon.leagueoflegends.com/cdn/{Logic.patch}/img/item/{id}.png")
+            if image.status_code == 200:
+                Logic.mongo['data']['image'].insert_one({'id':id , 'image' : image.content})
+    @staticmethod
+    def start_up():
+        config = dotenv_values(".env")
+        mongo = MongoClient(config["ATLAS_URL"])
+        appData = mongo["data"]
+        matchData = appData["match"]
+        riotSess = requests.session()
+        riotSess.headers.update({'X-RIOT-TOKEN':config['API_KEY']})
+        Logic.riotSession = riotSess
+        Logic.dSession = requests.session()
+        Logic.mongo = mongo
+        Logic.patch = Logic.dSession.get("https://ddragon.leagueoflegends.com/api/versions.json").json()[0]
+        Logic.itemsObject =  Logic.dSession.get(f"http://ddragon.leagueoflegends.com/cdn/{Logic.patch}/data/en_US/item.json").json()
 
-def mostRecentLolPatch():
-    return requests.get("https://ddragon.leagueoflegends.com/api/versions.json").json()[0]
+        
+    @staticmethod
+    def search (server,summonerName,start):
+        try:
+            x=datetime.datetime.now()
+            self = Logic(server,summonerName,start)
+            file = open('image.png',"wb")
+            dbImage = Logic.mongo['data']['image'].find_one({'id':'8001'})
+            file.write(dbImage['image'])
+            file.close()
+            print((datetime.datetime.now()-x).total_seconds())
+            return self
+        except AttributeError:
+            return "call start up function to intalize function"
 
-patch = mostRecentLolPatch()
+    def __init__(self,server,summonerName,start):
+        self.server = server
+        self.summonerName = summonerName
+        self.summonerObject = self.summonerObj()
+        self.rankedStats = self.rankedWR()
+        self.region = self.getRegionFromServer()
+        self.matchList = self.getMatchesArray(start,20,'')
+        self.fullMatchObjects = self.getMatchInfo()
+        self.keyMatchInfo = self.getFullSummonerStatsForMatch()
+    # def getItemObject(self,id):
+    #     try:
+    #         Logic.itemsObject['data'][id].update({'id':id})
+    #         return Logic.itemsObject['data'][id]
+    #     except:
+    #         return 'None'
 
-def getItemsJSON():
-    return requests.get(f"http://ddragon.leagueoflegends.com/cdn/{patch}/data/en_US/item.json").json()
-
-itemsObject = getItemsJSON()
-
-def getItemObject(id):
-    try:
-        itemsObject['data'][id].update({'id':id})
-        return itemsObject['data'][id]
-    except:
-        return 'None'
-
-def getItemName(id):
-    try:
-        return itemsObject['data'][id]['name']
-    except:
-        return 'None'
-
-def getItemImage(session,id):
-    return session.get(f"http://ddragon.leagueoflegends.com/cdn/{patch}/img/item/{id}.png")
-
-def summoner (session,server,summonerName):
-    return session.get(f"https://{server}.api.riotgames.com/lol/summoner/v4/summoners/by-name/{summonerName}")
+    def getItemName(self,id):
+        try:
+            return Logic.itemsObject['data'][id]['name']
+        except:
+            return 'None'
+    def summonerObj (self):
+        return Logic.riotSession.get(f"https://{self.server}.api.riotgames.com/lol/summoner/v4/summoners/by-name/{self.summonerName}").json()
     
-def rankedWR (session,server,summonerID):
-    rankedWins =  session.get(f"https://{server}.api.riotgames.com/lol/league/v4/entries/by-summoner/{summonerID}").json()
-    list = []
-    for gameMode in rankedWins:
-        list.append({
-                "QueueType" : gameMode['queueType'],
-                "Rank":f"{gameMode['tier']} {gameMode['rank']} {gameMode['leaguePoints']}LP",
-                "Total Games" : gameMode['wins'] + gameMode['losses'],
-                "Wins" : gameMode['wins'],
-                "Losses" : gameMode['losses']
-                })
-    return list
-
-def getMatchesArray(session,region,puuid,start,count,type):
-    return session.get(f"https://{region}.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids?start={start}&count={count}&type={type}")
-
-def getMatchInfo(session,region,matchList):
-    list = []
-    for matchID in matchList:
-        search = matchData.find_one({"metadata.matchId":matchID}) 
-        if(search == None):
-            print('calling api')
-            match = session.get(f"https://{region}.api.riotgames.com/lol/match/v5/matches/{matchID}?api_key={config['API_KEY']}")
-            if(match.status_code == 200):
-                match = match.json()
-                match.update({'status_code':200})
-                matchData.insert_one(match)
-                list.append(match)
-            else:
-                list.append(match.json()['status'])
-                break
-        else:
-            list.append(search)
-    return list
-
-def getFullSummonerStatsForMatch(match):
-    if(match['status_code'] == 200):
+    def getItemImage(self,id):
+         return Logic.mongo['data']['image'].find_one({"id":id})
+    
+    def rankedWR (self):
+        rankedWins =  Logic.riotSession.get(f"https://{self.server}.api.riotgames.com/lol/league/v4/entries/by-summoner/{self.summonerObject['id']}").json()
         list = []
-        for player in match['info']['participants']:
+        for gameMode in rankedWins:
             list.append({
-                "summonerName" : player['summonerName'],
-                "champion" : player['championName'],
-                "kills" : player['kills'],
-                "deaths" : player['deaths'],
-                "assists" : player['assists'],
-                "creepScore" : player['totalMinionsKilled'] + player['neutralMinionsKilled'],
-                "items" : [
-                    getItemObject(f"{player['item0']}"),
-                    getItemObject(f"{player['item1']}"),
-                    getItemObject(f"{player['item2']}"),
-                    getItemObject(f"{player['item3']}"),
-                    getItemObject(f"{player['item4']}"),
-                    getItemObject(f"{player['item5']}"),
-                    getItemObject(f"{player['item6']}"),
-                ],
-                "goldEarned" : player['goldEarned'],
-                "win" : player['win']
-                })
+                    "QueueType" : gameMode['queueType'],
+                    "Rank":f"{gameMode['tier']} {gameMode['rank']} {gameMode['leaguePoints']}LP",
+                    "Total Games" : gameMode['wins'] + gameMode['losses'],
+                    "Wins" : gameMode['wins'],
+                    "Losses" : gameMode['losses']
+                    })
         return list
-    else:
-        return f"Match Object request did not have a 200 it had a {match['status_code']}"
 
-def getSpecificSummonerStats(summoner):
-    print('')
-def getRegionFromServer(server):
-    servers = {
-    "EUROPE":("euw1","eun1","ru"),
-    "AMERICAS":("na1","la1","la2","br1"),
-    "ASIA":("jp1","kr"),
-    "SEA":("ph2","sg2","th2","tw2","vn2")
-    }
-    for x, y in servers.items():
-        if server in y:
-            return x
+    def getMatchesArray(self,start,count,type):
+        return Logic.riotSession.get(f"https://{self.region}.api.riotgames.com/lol/match/v5/matches/by-puuid/{self.summonerObject['puuid']}/ids?start={start}&count={count}&type={type}").json()
 
-def mostRecentLolPatch():
-    return requests.get("https://ddragon.leagueoflegends.com/api/versions.json").json()[0]
+    def getMatchInfo(self):
+        list = []
+        for matchID in self.matchList:
+            search = Logic.mongo['data']['match'].find_one({"metadata.matchId":matchID}) 
+            if(search == None):
+                print('calling api')
+                match = self.riotSession.get(f"https://{self.region}.api.riotgames.com/lol/match/v5/matches/{matchID}")
+                if(match.status_code == 200):
+                    Logic.mongo['data']['match'].insert_one(match.json())
+                    list.append(match.json())
+                else:
+                    list.append(match.json())
+                    break
+            else:
+                list.append(search)
+        return list
 
-def champIcon(session,champion):
-    return session.get(f"http://ddragon.leagueoflegends.com/cdn/{patch}/img/champion/{champion}.png")
+    def getFullSummonerStatsForMatch(self):
+        list = []
+        for match in self.fullMatchObjects:
+            try:
+                list1 = []
+                for player in match['info']['participants']:
+                    list1.append({
+                        "summonerName" : player['summonerName'],
+                        "champion" : player['championName'],
+                        "kills" : player['kills'],
+                        "deaths" : player['deaths'],
+                        "assists" : player['assists'],
+                        "creepScore" : player['totalMinionsKilled'] + player['neutralMinionsKilled'],
+                        "items" : [
+                        {'id':f"{player['item0']}", 'name': self.getItemName(f"{player['item0']}")},
+                        {'id':f"{player['item1']}", 'name': self.getItemName(f"{player['item1']}")},
+                        {'id':f"{player['item2']}", 'name': self.getItemName(f"{player['item2']}")},
+                        {'id':f"{player['item3']}", 'name': self.getItemName(f"{player['item3']}")},
+                        {'id':f"{player['item4']}", 'name': self.getItemName(f"{player['item4']}")},
+                        {'id':f"{player['item5']}", 'name': self.getItemName(f"{player['item5']}")},
+                        {'id':f"{player['item6']}", 'name': self.getItemName(f"{player['item6']}")},
+                        ],
+                        "goldEarned" : player['goldEarned'],
+                        "win" : player['win']
+                        })
+                list.append(list1)
+            except KeyError:
+                return f"Match Object request did not have a 200 it had a {match['status_code']}"
+        return list 
 
-def imageDownloader(matchObjects,summonerName):
-    icons = os.listdir('./images/icons')
-    items = os.listdir('./images/items')
-    count = 1
-    for match in matchObjects:
-        if(match['status_code'] == 200):
-            summonerStats = getFullSummonerStatsForMatch(match)
-            for each in summonerStats:
-                if each['summonerName'] == summonerName:
-                    print(each['champion']) 
+    def getSpecificSummonerStats(self):
+        list = []
+        for match in self.keyMatchInfo:
+            for player in match:
+                if(player['summonerName'] == self.summonerName):
+                    for item in player['items']:
+                        item.update({'image':self.getItemImage(item['id'])})
+                    list.append(player)
+        return list
 
-            # for summoner in summonerStats:
-            #     print(summoner['champion'])
-            #     if(f"{summoner['champion']}.png") not in icons:
-            #         with open(f"./images/icons/{summoner['champion']}.png","wb") as f:
-            #             f.write(champIcon(dDragonSession,summoner['champion']).content)
-            #             f.close()
-            #     for item in summoner['items']:
-            #         if(item != 'None') and f"{item['name']}.png" not in items:
-            #             with open(f"./images/items/{item['name'].replace(' ','')}.png","wb") as f:
-            #                 f.write(getItemImage(dDragonSession,item['id']).content)
-            #                 f.close()
-                
-        else:
-             print(match)
-            
-def search (session,server,summonerName,start):
-    summonerObj = summoner(session,server,summonerName).json()
-    print(summonerObj)
-    rankedWins = rankedWR(session,server,summonerObj['id'])
-    print(rankedWins)
-    region = getRegionFromServer(server)
-    matchList = getMatchesArray(session,region,summonerObj['puuid'],start,20,"ranked").json()
-    matchObjects = getMatchInfo(session,region,matchList)
-    imageDownloader(matchObjects,summonerName)
+    def getRegionFromServer(self):
+        servers = {
+        "EUROPE":("euw1","eun1","ru"),
+        "AMERICAS":("na1","la1","la2","br1"),
+        "ASIA":("jp1","kr"),
+        "SEA":("ph2","sg2","th2","tw2","vn2")
+        }
+        for x, y in servers.items():
+            if self.server in y:
+                return x
+    def getKeyInfo(self):
+        return self.summonerObject,self.rankedStats,self.getSpecificSummonerStats()
+
+    def champIcon(self,champion):
+        return Logic.dSession.get(f"http://ddragon.leagueoflegends.com/cdn/{Logic.patch}/img/champion/{champion}.png")
+
+    # def getChampsJSON(self,session,patch):
+    #     return session.get(f"http://ddragon.leagueoflegends.com/cdn/{patch}/data/en_US/item.json").json()
+
+    def summonerIcon(self,id):
+        return Logic.dSession.get(f"http://ddragon.leagueoflegends.com/cdn/{Logic.patch}/img/profileicon/{id}.png")
+    
+    # def allImageDownloader(self,redownload,overwrite=False):
+    #     directories = ['profileIcons','champIcons','items','runes','spells']
+    #     for folder in directories:
+    #         try:
+    #             os.makedirs(f'./images/{folder}',exist_ok=overwrite)
+    #         except FileExistsError:
+    #             continue
+    #     if(redownload):
+    #         for id in Logic.itemsObject['data']:
+    #             with open(f'./images/items/{id}.png','wb') as f:
+    #                 f.write(self.getItemImage(id).content)
+    #                 f.close()
+
+
     
 
-search(riotAPISession,'euw1','Elite500',150)
 
 
-print((datetime.datetime.now()-x).total_seconds())
