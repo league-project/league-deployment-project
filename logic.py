@@ -8,55 +8,73 @@ class Logic:
     dSession = None 
     mongo = None
     @staticmethod 
-    def itemImageDownload():
+    def imageDownload():
+        Logic.imageDB['item'].delete_many({})
         for id in Logic.itemsObject['data']:
             image = Logic.dSession.get(f"http://ddragon.leagueoflegends.com/cdn/{Logic.patch}/img/item/{id}.png")
             if image.status_code == 200:
-                Logic.mongo['data']['image'].insert_one({'id':id , 'image' : image.content})
+                Logic.imageDB['item'].insert_one({'id':id , 'image' : image.content})
+        Logic.imageDB['champIcon'].delete_many({})
+        for id in Logic.champObject['data']:
+            image = Logic.dSession.get(f"http://ddragon.leagueoflegends.com/cdn/{Logic.patch}/img/champion/{id}.png")
+            if image.status_code == 200:
+                Logic.imageDB['champIcon'].insert_one({'id':id , 'image' : image.content})
+
     @staticmethod
     def start_up():
         config = dotenv_values(".env")
         mongo = MongoClient(config["ATLAS_URL"])
         appData = mongo["data"]
-        matchData = appData["match"]
         riotSess = requests.session()
         riotSess.headers.update({'X-RIOT-TOKEN':config['API_KEY']})
         Logic.riotSession = riotSess
         Logic.dSession = requests.session()
         Logic.mongo = mongo
+        Logic.matchData = appData['match']
+        Logic.imageDB = mongo['image']
         Logic.patch = Logic.dSession.get("https://ddragon.leagueoflegends.com/api/versions.json").json()[0]
         Logic.itemsObject =  Logic.dSession.get(f"http://ddragon.leagueoflegends.com/cdn/{Logic.patch}/data/en_US/item.json").json()
-
-        
-    @staticmethod
-    def search (server,summonerName,start):
-        try:
-            x=datetime.datetime.now()
-            self = Logic(server,summonerName,start)
-            file = open('image.png',"wb")
-            dbImage = Logic.mongo['data']['image'].find_one({'id':'8001'})
-            file.write(dbImage['image'])
-            file.close()
-            print((datetime.datetime.now()-x).total_seconds())
-            return self
-        except AttributeError:
-            return "call start up function to intalize function"
-
-    def __init__(self,server,summonerName,start):
+        Logic.champObject =  Logic.dSession.get(f"http://ddragon.leagueoflegends.com/cdn/{Logic.patch}/data/en_US/champion.json").json()
+        Logic.itemImages = {}
+    
+    def __init__(self,server,summonerName,type=''):
         self.server = server
+        self.type = type
         self.summonerName = summonerName
         self.summonerObject = self.summonerObj()
         self.rankedStats = self.rankedWR()
         self.region = self.getRegionFromServer()
-        self.matchList = self.getMatchesArray(start,20,'')
-        self.fullMatchObjects = self.getMatchInfo()
-        self.keyMatchInfo = self.getFullSummonerStatsForMatch()
+        self.matchesGotten = 0
+        
+
+       
     # def getItemObject(self,id):
     #     try:
     #         Logic.itemsObject['data'][id].update({'id':id})
     #         return Logic.itemsObject['data'][id]
     #     except:
     #         return 'None'
+
+    def search (self):
+        try:
+            x=datetime.datetime.now()
+            obj = self.getNextGames()
+            print((datetime.datetime.now()-x).total_seconds())
+            return obj
+
+        except AttributeError:
+            return "call start up function to intalize function"
+        
+    def getNextGames(self,type=''):
+        if(type != self.type):
+            self.type = type
+            self.matchesGotten = 0 
+        self.matchList = self.getMatchesArray(self.matchesGotten+20,20,self.type)
+        print(self.matchList)
+        self.fullMatchObjects = self.getMatchInfo()
+        self.keyMatchInfo = self.getFullSummonerStatsForMatch()
+        return self.summonerObject,self.rankedStats,self.getSpecificSummonerStats()
+        
 
     def getItemName(self,id):
         try:
@@ -67,7 +85,15 @@ class Logic:
         return Logic.riotSession.get(f"https://{self.server}.api.riotgames.com/lol/summoner/v4/summoners/by-name/{self.summonerName}").json()
     
     def getItemImage(self,id):
-         return Logic.mongo['data']['image'].find_one({"id":id})
+         if id == '0':
+            return 'None'
+         elif id not in Logic.itemImages.keys():
+            itemImage = Logic.imageDB['item'].find_one({"id":id},{"_id":0})
+            Logic.itemImages.update({id:itemImage['image']})
+            return itemImage['image']
+         else:
+            print("already gotten")
+            return Logic.itemImages[id]
     
     def rankedWR (self):
         rankedWins =  Logic.riotSession.get(f"https://{self.server}.api.riotgames.com/lol/league/v4/entries/by-summoner/{self.summonerObject['id']}").json()
@@ -86,14 +112,14 @@ class Logic:
         return Logic.riotSession.get(f"https://{self.region}.api.riotgames.com/lol/match/v5/matches/by-puuid/{self.summonerObject['puuid']}/ids?start={start}&count={count}&type={type}").json()
 
     def getMatchInfo(self):
-        list = []
+        list = [] 
         for matchID in self.matchList:
-            search = Logic.mongo['data']['match'].find_one({"metadata.matchId":matchID}) 
+            search = Logic.matchData.find_one({"metadata.matchId":matchID},{"_id":0}) 
             if(search == None):
                 print('calling api')
                 match = self.riotSession.get(f"https://{self.region}.api.riotgames.com/lol/match/v5/matches/{matchID}")
                 if(match.status_code == 200):
-                    Logic.mongo['data']['match'].insert_one(match.json())
+                    Logic.matchData.insert_one(match.json())
                     list.append(match.json())
                 else:
                     list.append(match.json())
@@ -152,14 +178,9 @@ class Logic:
         for x, y in servers.items():
             if self.server in y:
                 return x
-    def getKeyInfo(self):
-        return self.summonerObject,self.rankedStats,self.getSpecificSummonerStats()
 
     def champIcon(self,champion):
         return Logic.dSession.get(f"http://ddragon.leagueoflegends.com/cdn/{Logic.patch}/img/champion/{champion}.png")
-
-    # def getChampsJSON(self,session,patch):
-    #     return session.get(f"http://ddragon.leagueoflegends.com/cdn/{patch}/data/en_US/item.json").json()
 
     def summonerIcon(self,id):
         return Logic.dSession.get(f"http://ddragon.leagueoflegends.com/cdn/{Logic.patch}/img/profileicon/{id}.png")
