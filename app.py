@@ -4,8 +4,9 @@ Logic.start_up()
 
 def search(server,summonerName):
     try:
-        summoner = Logic.search(server,summonerName,40)
-        print(summoner.getKeyInfo())
+        summoner = Logic(server,summonerName)
+        print(summoner.getNextGames())
+        print(summoner.getNextGames())
     except AttributeError:
         print("Call the start up function first!")
 
