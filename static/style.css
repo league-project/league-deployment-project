@@ -1,0 +1,63 @@
+* {
+            font-family: "Comic Sans MS", "Comic Sans", cursive;
+            font-size: large;
+            color:whitesmoke;
+        }
+        body{
+            margin-left: 1rem;
+            background: #1a1f23;
+            color:whitesmoke;
+        }
+        hr{
+            width:17.5%;
+            background-color: #e70c50;
+            border: none;
+            height: 0.2rem;
+        }
+        .title {
+            font-family: "Comic Sans MS", "Comic Sans", cursive;
+        }
+        .form {
+            text-align: center;
+        }
+        nav {
+            text-align: center;
+        }
+        nav a {
+            color: #0ce7a3;
+            font-size: 3em;
+            margin-left: 1rem;
+            text-decoration: none;
+        }
+        button[type=submit] {
+            border: #e70c50 solid 0.2rem;
+            border-radius: 1rem;
+            font-size: medium;
+            padding: 0.5rem;
+            background-color: #1a1f23;
+        }
+        button[type=submit]:hover{
+            background-color: #9ade59;
+        }
+        button[type=submit]:active{
+            transform: translateY(4px);
+            background-color: rgba(127, 255, 0, 0.94);
+        }
+        ::placeholder {
+            color: gray;
+        }
+        input[type=text] {
+            background-color: transparent;
+            color:whitesmoke;
+            margin: 1rem;
+            border-radius: 1rem;
+            height: 2rem;
+            width: 25rem;
+            padding-left: 1rem;
+            padding-top: 0.2rem;
+            padding-bottom: 0.2rem;
+            border: #e70c50 solid 0.2rem;
+        }
+        input[type=text]:focus {
+            background-color: rebeccapurple;
+        }
