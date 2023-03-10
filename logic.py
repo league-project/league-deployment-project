@@ -39,6 +39,7 @@ def id_assigner():
 id_assigner()
 print(rota_names)
 
+
 def rota_vs_watchlist(wl):
     watchlist_match = []
     for each in wl:
