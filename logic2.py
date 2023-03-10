@@ -58,9 +58,8 @@ class Logic:
     def search (self):
         try:
             x=datetime.datetime.now()
-            obj = self.getNextGames()
             print((datetime.datetime.now()-x).total_seconds())
-            return obj
+            return self.summonerObject,self.rankedStats
 
         except AttributeError:
             return "call start up function to intalize function"
@@ -70,10 +69,9 @@ class Logic:
             self.type = type
             self.matchesGotten = 0 
         self.matchList = self.getMatchesArray(self.matchesGotten+20,20,self.type)
-        print(self.matchList)
         self.fullMatchObjects = self.getMatchInfo()
         self.keyMatchInfo = self.getFullSummonerStatsForMatch()
-        return self.summonerObject,self.rankedStats,self.getSpecificSummonerStats()
+        return self.getSpecificSummonerStats()
         
 
     def getItemName(self,id):
@@ -170,10 +168,10 @@ class Logic:
 
     def getRegionFromServer(self):
         servers = {
-        "EUROPE":("euw1","eun1","ru"),
+        "EUROPE":("euw1","eun1","ru","tr1"),
         "AMERICAS":("na1","la1","la2","br1"),
         "ASIA":("jp1","kr"),
-        "SEA":("ph2","sg2","th2","tw2","vn2")
+        "SEA":("ph2","sg2","th2","tw2","vn2","oc1")
         }
         for x, y in servers.items():
             if self.server in y:
