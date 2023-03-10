@@ -151,7 +151,7 @@ class Logic:
             return Logic.runeImages[id]
     def getChampIcon(self,id):
         if id not in Logic.champIcons.keys():
-            Image = Logic.imageDB['champIcon'].find_one({"id":id},{"_id":0})git 
+            Image = Logic.imageDB['champIcon'].find_one({"id":id},{"_id":0}) 
             Logic.champIcons.update({id:Image['image']})
             return Image['image']
         else:
