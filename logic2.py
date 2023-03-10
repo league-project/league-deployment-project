@@ -19,6 +19,10 @@ class Logic:
             image = Logic.dSession.get(f"http://ddragon.leagueoflegends.com/cdn/{Logic.patch}/img/champion/{id}.png")
             if image.status_code == 200:
                 Logic.imageDB['champIcon'].insert_one({'id':id , 'image' : image.content})
+        for rune in Logic.runesObject:
+            image = Logic.dSession.get("https://raw.communitydragon.org/latest/plugins/rcb-be"+rune["iconPath"])
+            if image.status_code == 200:
+                Logic.imageDB['runes'].insert_one({'id':rune['id'],"image":image.content})
 
     @staticmethod
     def start_up():
@@ -35,7 +39,9 @@ class Logic:
         Logic.patch = Logic.dSession.get("https://ddragon.leagueoflegends.com/api/versions.json").json()[0]
         Logic.itemsObject =  Logic.dSession.get(f"http://ddragon.leagueoflegends.com/cdn/{Logic.patch}/data/en_US/item.json").json()
         Logic.champObject =  Logic.dSession.get(f"http://ddragon.leagueoflegends.com/cdn/{Logic.patch}/data/en_US/champion.json").json()
+        Logic.runesObject = Logic.dSession.get(f"https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perks.json").json()
         Logic.itemImages = {}
+        Logic.runeImages = {}
     
     def __init__(self,server,summonerName,type=''):
         self.server = server
@@ -59,7 +65,7 @@ class Logic:
         try:
             x=datetime.datetime.now()
             print((datetime.datetime.now()-x).total_seconds())
-            return self.summonerObject,self.rankedStats
+            return self.summonerObject,self.rankedStats,self.getNextGames()
 
         except AttributeError:
             return "call start up function to intalize function"
@@ -80,7 +86,9 @@ class Logic:
         except:
             return 'None'
     def summonerObj (self):
-        return Logic.riotSession.get(f"https://{self.server}.api.riotgames.com/lol/summoner/v4/summoners/by-name/{self.summonerName}").json()
+        obj =  Logic.riotSession.get(f"https://{self.server}.api.riotgames.com/lol/summoner/v4/summoners/by-name/{self.summonerName}").json()
+        obj.update({'iconImage':self.summonerIcon(obj['profileIconId']).content})
+        return obj
     
     def getItemImage(self,id):
          if id == '0':
@@ -92,7 +100,38 @@ class Logic:
          else:
             print("already gotten")
             return Logic.itemImages[id]
+        
+    def getStatName(self,statObject):
+        list = []
+        for id in statObject.values():
+            for rune in Logic.runesObject:
+                if rune['id'] == id:
+                    list.append({id:rune['name']})
+        return list
+    def getPrimaryRuneName(self,styleList):
+        list = []
+        for id in styleList[0]['selections']:
+            for rune in Logic.runesObject:
+                if rune['id'] == id['perk']:
+                    list.append({"id":id['perk'] , "name":rune['name']})
+        return list
     
+    def getSecondaryRuneName(self,styleList):
+        list = []
+        for id in styleList[1]['selections']:
+            for rune in Logic.runesObject:
+                if rune['id'] == id['perk']:
+                    list.append({"id":id['perk'] , "name":rune['name']})
+        return list
+    def getRuneImage(self,id):
+        if id not in Logic.runeImages.keys():
+            runeImage = Logic.imageDB['runes'].find_one({"id":id},{"_id":0})
+            Logic.runeImages.update({id:runeImage['image']})
+            return runeImage['image']
+        else:
+            print("already gotten")
+            return Logic.runeImages[id]
+        
     def rankedWR (self):
         rankedWins =  Logic.riotSession.get(f"https://{self.server}.api.riotgames.com/lol/league/v4/entries/by-summoner/{self.summonerObject['id']}").json()
         list = []
@@ -107,6 +146,7 @@ class Logic:
         return list
 
     def getMatchesArray(self,start,count,type):
+        #self.matchesGotten += count
         return Logic.riotSession.get(f"https://{self.region}.api.riotgames.com/lol/match/v5/matches/by-puuid/{self.summonerObject['puuid']}/ids?start={start}&count={count}&type={type}").json()
 
     def getMatchInfo(self):
@@ -149,7 +189,11 @@ class Logic:
                         {'id':f"{player['item6']}", 'name': self.getItemName(f"{player['item6']}")},
                         ],
                         "goldEarned" : player['goldEarned'],
+                        "runeStats": self.getStatName(player['perks']['statPerks']),
+                        "primaryRunes": self.getPrimaryRuneName(player['perks']['styles']),
+                        "secondaryRunes": self.getSecondaryRuneName(player['perks']['styles']),
                         "win" : player['win']
+    
                         })
                 list.append(list1)
             except KeyError:
@@ -163,6 +207,12 @@ class Logic:
                 if(player['summonerName'] == self.summonerName):
                     for item in player['items']:
                         item.update({'image':self.getItemImage(item['id'])})
+                    for stat in player['runeStats']:
+                        stat.update({'image':self.getItemImage(item['id'])})
+                    for prune in player['primaryRunes']:
+                        prune.update({'image':self.getItemImage(item['id'])})
+                    for srune in player['secondaryRunes']:
+                        srune.update({'image':self.getItemImage(item['id'])})
                     list.append(player)
         return list
 

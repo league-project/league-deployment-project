@@ -6,8 +6,6 @@ def search(server,summonerName):
     try:
         summoner = Logic(server,summonerName)
         print(summoner.search())
-        print(summoner.getNextGames())
-        print(summoner.getNextGames())
     except AttributeError:
         print("Call the start up function first!")
 
