@@ -8,15 +8,12 @@
             background: #1a1f23;
             color:whitesmoke;
         }
-        hr{
-            width:17.5%;
-            background-color: #e70c50;
-            border: none;
-            height: 0.2rem;
-        }
+
         .title {
             font-family: "Comic Sans MS", "Comic Sans", cursive;
+            border-bottom: 0.2rem solid #e70c50;
         }
+
         .form {
             text-align: center;
         }
@@ -25,9 +22,16 @@
         }
         nav a {
             color: #0ce7a3;
+            text-shadow: 0.2rem 0.2rem black;
             font-size: 3em;
             margin-left: 1rem;
             text-decoration: none;
+        }
+        nav a:hover {
+            cursor: url(https://i.imgur.com/rY9MvVg.png) 0 0, auto;
+        }
+        .cursor {
+            cursor: url(https://i.imgur.com/rY9MvVg.png) 0 0, auto;
         }
         button[type=submit] {
             border: #e70c50 solid 0.2rem;
@@ -60,4 +64,24 @@
         }
         input[type=text]:focus {
             background-color: rebeccapurple;
+        }
+
+        .content{
+            text-align: center;
+        }
+
+        .hidden{
+            display: none;
+        }
+
+        .confirmed {
+            margin-top: 10rem;
+            width: 50%;
+            margin-right: auto;
+            margin-left: auto;
+            text-shadow: 0.1rem 0.1rem black ;
+        }
+
+        .nava {
+            font-size: 1.5rem;
         }

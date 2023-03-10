@@ -1,4 +1,267 @@
 {% extends 'base.html' %}
 {% block title %} Home {% endblock %}
+{% block style %}
+<style>
+    .select-box {
+        position: relative;
+        text-align: center;
+        display: block;
+        width: 35%;
+        margin-right: auto;
+        margin-left: auto;
+        margin-top: 10%;
+    }
+
+    .select-box:hover , .select-box__current:hover{
+        cursor: url(https://i.imgur.com/rY9MvVg.png) 0 0, auto;
+    }
+    .select-box__current {
+        position: relative;
+        box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        outline: none;
+    }
+
+    .select-box__current:focus + .select-box__list {
+        opacity: 1;
+        -webkit-animation-name: none;
+        animation-name: none;
+    }
+
+    .select-box__current:focus + .select-box__list .select-box__option {
+        cursor: url(https://i.imgur.com/rY9MvVg.png) 0 0, auto;
+    }
+.select-box__current:focus .select-box__icon {
+          transform: translateY(-50%) rotate(180deg);
+}
+.select-box__icon {
+  position: absolute;
+  top: 50%;
+  right: 15px;
+          transform: translateY(-50%);
+  width: 20px;
+  opacity: 0.3;
+  transition: 0.2s ease;
+}
+.select-box__value {
+  display: flex;
+}
+.select-box__input {
+  display: none;
+}
+.select-box__input:checked + .select-box__input-text {
+  display: block;
+}
+.select-box__input-text {
+  display: none;
+  width: 100%;
+  margin: 0;
+  padding: 15px;
+  background-color: #fff;
+}
+.select-box__list {
+    margin-top: 0;
+  position: absolute;
+  width: 100%;
+  padding: 0;
+  list-style: none;
+  opacity: 0;
+  -webkit-animation-name: HideList;
+          animation-name: HideList;
+  -webkit-animation-duration: 0.5s;
+          animation-duration: 0.5s;
+  -webkit-animation-delay: 0.5s;
+          animation-delay: 0.5s;
+  -webkit-animation-fill-mode: forwards;
+          animation-fill-mode: forwards;
+  -webkit-animation-timing-function: step-start;
+          animation-timing-function: step-start;
+  box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.1);
+}
+.select-box__option {
+  display: block;
+  padding: 15px;
+  background-color: #fff;
+}
+.select-box__option:hover, .select-box__option:focus {
+  color: #546c84;
+  background-color: #fbfbfb;
+}
+@keyframes HideList {
+  from {
+            transform: scaleY(1);
+  }
+  to {
+            transform: scaleY(0);
+  }
+}
+.disableit:hover, .disableit {
+    color:gray;
+    font-size: x-large;
+}
+
+.searchsubmit {
+    width:1rem;
+    height: 1rem;
+    padding: 0.1rem;
+    margin: 0;
+}
+</style>
+{% endblock %}
+
 {% block content %}
+
+    <div class="search">
+{#        <label for="summoner" class="hidden">Summoner Name:</label> <br>#}
+{#        <select id="region">#}
+{#            <option value="euw1" selected>EUW</option>#}
+{#            <option value="eun1">EUNE</option>#}
+{#            <option value="br1">BR</option>#}
+{#            <option value="ru">RUS</option>#}
+{#            <option value="na1">NA</option>#}
+{#            <option value="la1">LAN</option>#}
+{#            <option value="la2">LAS</option>#}
+{#            <option value="la1">OCE</option>#}
+{#            <option value="tr1">TUR</option>#}
+{#            <option value="jp1">JAP</option>#}
+{#            <option value="kr1">KOR</option>#}
+{#            <option value="ph2">PH</option>#}
+{#            <option value="sg2">SG</option>#}
+{#            <option value="tw2">TW</option>#}
+{#            <option value="th2">TH</option>#}
+{#            <option value="vn2">VN</option>#}
+{#        </select>#}
+
+    <form method="post"> <div class="searchbar">
+        <div class="select-box">
+          <div class="select-box__current" tabindex="1">
+            <div class="select-box__value">
+              <input class="select-box__input" type="radio" id="s1" name="region" disabled/>
+              <p class="select-box__input-text">Europe</p>
+            </div>
+            <div class="select-box__value">
+              <input class="select-box__input" type="radio" id="0" value="euw1" name="region" checked="checked"/>
+              <p class="select-box__input-text">EUW</p>
+            </div>
+            <div class="select-box__value">
+              <input class="select-box__input" type="radio" id="1" value="eun1" name="region"/>
+              <p class="select-box__input-text">EUNE</p>
+            </div>
+            <div class="select-box__value">
+              <input class="select-box__input" type="radio" id="2" value="br1" name="region"/>
+              <p class="select-box__input-text">BR</p>
+            </div>
+            <div class="select-box__value">
+              <input class="select-box__input" type="radio" id="3" value="na1" name="region"/>
+              <p class="select-box__input-text">NA</p>
+            </div>
+            <div class="select-box__value">
+              <input class="select-box__input" type="radio" id="4" value="ru" name="region"/>
+              <p class="select-box__input-text">RUS</p>
+            </div>
+            <div class="select-box__value">
+              <input class="select-box__input" type="radio" id="5" value="la1" name="region"/>
+              <p class="select-box__input-text">LAN</p>
+            </div>
+            <div class="select-box__value">
+              <input class="select-box__input" type="radio" id="6" value="la2" name="region"/>
+              <p class="select-box__input-text">LAS</p>
+            </div>
+            <div class="select-box__value">
+              <input class="select-box__input" type="radio" id="7" value="oc1" name="region"/>
+              <p class="select-box__input-text">OCE</p>
+            </div>
+            <div class="select-box__value">
+              <input class="select-box__input" type="radio" id="8" value="tr1" name="region"/>
+              <p class="select-box__input-text">TUR</p>
+            </div>
+            <div class="select-box__value">
+              <input class="select-box__input" type="radio" id="9" value="jp1" name="region"/>
+              <p class="select-box__input-text">JAP</p>
+            </div>
+            <div class="select-box__value">
+              <input class="select-box__input" type="radio" id="10" value="kr1" name="region"/>
+              <p class="select-box__input-text">KOR</p>
+            </div>
+            <div class="select-box__value">
+              <input class="select-box__input" type="radio" id="11" value="ph2" name="region"/>
+              <p class="select-box__input-text">PH</p>
+            </div>
+            <div class="select-box__value">
+              <input class="select-box__input" type="radio" id="12" value="sg2" name="region"/>
+              <p class="select-box__input-text">SG</p>
+            </div>
+            <div class="select-box__value">
+              <input class="select-box__input" type="radio" id="13" value="tw2" name="region"/>
+              <p class="select-box__input-text">TW</p>
+            </div>
+            <div class="select-box__value">
+              <input class="select-box__input" type="radio" id="14" value="th2" name="region"/>
+              <p class="select-box__input-text">TH</p>
+            </div>
+            <div class="select-box__value">
+              <input class="select-box__input" type="radio" id="15" value="vn2" name="region"/>
+              <p class="select-box__input-text">VN</p>
+            </div>
+              <img class="select-box__icon" src="https://cdn.onlinewebfonts.com/svg/img_295694.svg" alt="Arrow Icon" aria-hidden="true"/>
+          </div>
+
+            <ul class="select-box__list">
+              <li>
+                <label class="select-box__option disableit" for="s1">Europe</label>
+              </li>
+              <li>
+                <label class="select-box__option" for="0" >EUW</label>
+              </li>
+              <li>
+                <label class="select-box__option" for="1" >EUNE</label>
+              </li>
+              <li>
+                <label class="select-box__option" for="2" >BR</label>
+              </li>
+              <li>
+                <label class="select-box__option" for="3" >NA</label>
+              </li>
+              <li>
+                <label class="select-box__option" for="4" >RUS</label>
+              </li>
+              <li>
+                <label class="select-box__option" for="5" >LAN</label>
+              </li>
+              <li>
+                <label class="select-box__option" for="6" >LAS</label>
+              </li>
+              <li>
+                <label class="select-box__option" for="7" >OCE</label>
+              </li>
+              <li>
+                <label class="select-box__option" for="8" >TUR</label>
+              </li>
+              <li>
+                <label class="select-box__option" for="9" >JAP</label>
+              </li>
+              <li>
+                <label class="select-box__option" for="10" >KOR</label>
+              </li>
+              <li>
+                <label class="select-box__option" for="11" >PH</label>
+              </li>
+              <li>
+                <label class="select-box__option" for="12" >SG</label>
+              </li>
+              <li>
+                <label class="select-box__option" for="13" >TW</label>
+              </li>
+              <li>
+                <label class="select-box__option" for="14" >TH</label>
+              </li>
+              <li>
+                <label class="select-box__option" for="15" >VN</label>
+              </li>
+            </ul>
+        </div>
+        <input type="search" id="summoner" name="summoner" placeholder="Summoner Name" class="cursor">
+        <button type="submit" class="cursor"><img class="searchsubmit" src="https://cdn-icons-png.flaticon.com/512/711/711319.png" alt="Submit Button"></button>
+    </div></form>
+    </div>
 {% endblock %}

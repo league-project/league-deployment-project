@@ -2,16 +2,18 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
     <title>{% block title %} {% endblock %} - LossGBT</title>
     <link rel="shortcut icon" href="{{ url_for('static', filename='icon.ico') }}">
     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='style.css') }}">
+    {% block style %} {% endblock %}
 </head>
 <body>
     <nav>
-        <a href="{{ url_for('index')}}" class="title">LossGBT</a>
-<!--        <a href="#">About</a>-->
+        <a href="/watchlist" class="nava">Watchlist</a>
+        <a href="/" class="title">LossGBT</a>
+        <a href="https://github.com/podpah/league-api-project/blob/main/logic.py" class="nava">Source</a>
     </nav>
-    <hr>
     <div class="content">
         {% block content %} {% endblock %}
     </div>

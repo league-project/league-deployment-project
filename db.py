@@ -4,14 +4,16 @@ from logic import run_mail_feature
 
 config = dotenv_values(".env")
 
-env = config["MONGO_URL"]
-client = pymongo.MongoClient(env)
+mongo_url = config["MONGO_URL"]
+client = pymongo.MongoClient(mongo_url)
 db = client["data"]
 col = db["emails"]
 
 
 def db_checks():
     search = list(col.find({}, {"_id": 0}))
+    if search is None:
+        return None
     for each in search:
         x = run_mail_feature(each["email"], each["champions"])
         if x is not None:
