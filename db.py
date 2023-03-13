@@ -16,7 +16,9 @@ def db_checks():
         return None
     for each in search:
         x = run_mail_feature(each["email"], each["champions"])
-        if x is not None:
+        if x is False:
+            pass
+        if x:
             col.update_one({"email": each["email"]}, {"$set": {"champions": x}})
         if x is None:  # If their list is now empty, remove them from the list
             col.delete_one({"email": each["email"]})
@@ -27,5 +29,7 @@ db_checks()
 
 def db_inserts(email, champs):
     champs = champs.split(",")
+    for index, each in enumerate(champs):
+        champs[index] = each.strip()
 
     col.insert_one({"email": email, "champions": champs})
