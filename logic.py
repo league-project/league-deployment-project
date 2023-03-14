@@ -145,4 +145,3 @@ def run_mail_feature(recipient, wl):
         return None
     send_mail(payload, recipient)
     return wl_adjusting(wl, match)
-
