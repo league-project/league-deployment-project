@@ -1,17 +1,35 @@
 from flask import Flask, request, render_template
+from db import db_inserts
 
 app = Flask(__name__)
 
 
-@app.route("/")
+@app.route("/", methods=("GET", "POST"))
 def index():
-    messages = [
-        {"title": "Message One", "content": "Message One Content"},
-        {"title": "Message Two", "content": "Message Two Content"},
-    ]
-    return render_template("index.html", messages=messages)
+    return render_template("index.html")
 
 
 @app.route("/watchlist/", methods=("GET", "POST"))
 def watchlist():
-    return render_template("watchlist.html")
+    if request.method == "POST":
+        email = request.form["email"]
+        champs = request.form["content"]
+        x = db_inserts(email, champs)
+        return render_template("confirmation.html")
+    if request.method == "GET":
+        return render_template("watchlist.html")
+
+
+@app.get("/confirmed/")
+def confirm():
+    return render_template("confirmation.html")
+
+
+@app.get("/summoner/<region>/<nick>")
+def get_summoner_data(region, nick):
+    return ""
+
+
+@app.get("/404/")
+def test404():
+    return render_template("404.html")
