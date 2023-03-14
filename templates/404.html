@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %} Not Found {% endblock %}
+
+{% block style %}
+    <style>
+        body {
+            background-image: url("/static/heimer.png");
+            background-repeat: no-repeat;
+            background-position: top;
+            background-size: cover;
+        }
+        @media screen and (max-width:600px) {
+            body {
+                background-image: url("/static/heimerloading.png");
+            }
+        }
+        .content {
+            margin-top: 10rem;
+            text-shadow: 0.2rem 0.2rem black;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <h1>Something went wrong</h1>
+    <p>Are you sure the summoner/region are correct or did Heimerdinger put the batteries in the wrong way?</p>
+{% endblock %}

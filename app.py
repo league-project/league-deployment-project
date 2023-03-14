@@ -23,3 +23,13 @@ def watchlist():
 @app.get("/confirmed/")
 def confirm():
     return render_template("confirmation.html")
+
+
+@app.get("/summoner/<region>/<nick>")
+def get_summoner_data(region, nick):
+    return ""
+
+
+@app.get("/404/")
+def test404():
+    return render_template("404.html")
