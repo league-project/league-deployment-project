@@ -1,5 +1,32 @@
 {% extends 'base.html' %}
 
+{% block style %}
+    <style>
+        body {
+            background-image: url("/static/psyopspyke.jpeg");
+            background-repeat: no-repeat;
+            background-position: top;
+            background-size: cover;
+        }
+
+        .content {
+            margin-top: 10rem;
+            text-shadow: 0.2rem 0.2rem black;
+        }
+
+        @media screen and (max-width:600px) {
+            body {
+                background-image: url("/static/psyopspykeloading.png");
+            }
+            .content {
+                margin-top: 10%;
+            }
+        }
+
+
+    </style>
+{% endblock %}
+
 {% block content %}
     <p style="display: none">{% block title %}Rotation Watchlist{% endblock %}</p>
     <form method="post" class="form">

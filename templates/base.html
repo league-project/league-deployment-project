@@ -7,6 +7,22 @@
     <link rel="shortcut icon" href="{{ url_for('static', filename='icon.ico') }}">
     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='style.css') }}">
     {% block style %} {% endblock %}
+    <style>
+
+    @media screen and (max-width:600px) {
+        nav {
+            flex-direction: column;
+        }
+
+        .nava {
+            order: 1;
+        }
+
+        .title {
+            order: -1;
+        }
+    }
+    </style>
 </head>
 <body>
     <nav>

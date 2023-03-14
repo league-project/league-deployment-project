@@ -34,11 +34,20 @@ button[type=submit] {
     margin-right: 0.2rem;
 }
 body {
-    background-image: url("/static/arcana_ryze.jpeg");
+    background-image: url("/static/arcanaryze.jpeg");
     background-repeat: no-repeat;
     background-position: top;
     background-size: cover;
 }
+@media screen and (max-width:600px) {
+            body {
+                background-image: url("/static/arcanaryzeloading.png");
+            }
+        }
+        .content {
+            margin-top: 10rem;
+            text-shadow: 0.2rem 0.2rem black;
+        }
 
 </style>
 {% endblock %}
