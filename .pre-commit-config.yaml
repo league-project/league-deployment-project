@@ -1,0 +1,20 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: no-commit-to-branch
+        args: [--branch, master,--branch, develop]
+      - id: requirements-txt-fixer
+
+  - repo: https://github.com/dhruvmanila/remove-print-statements
+    rev: v0.5.0
+    hooks:
+      - id: remove-print-statements
+        args: [--dry-run, --verbose]
+
+  - repo: https://github.com/psf/black
+    rev: 23.1.0
+    hooks:
+      - id: black
+        args: [., --line-length, !!str 120]

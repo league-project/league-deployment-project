@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %} Home {% endblock %}
+{% block style %}
+<style>
+.searchsubmit {
+    width:1rem;
+    height: 1rem;
+    padding: 0.1rem;
+    margin: 0;
+}
+
+select {
+    background-color: #e70c50;
+    border-radius: 2rem 0 0 2rem;
+    margin-right: -0.3rem;
+    border: 0.2rem solid cyan;
+    border-right: 0;
+}
+#summoner {
+    background-color: #e70c50;
+    border: 0.2rem solid cyan;
+    border-left: 0.1rem solid whitesmoke;
+    border-radius: 0 2rem 2rem 0;
+}
+
+#summsearch {
+    margin-top: 10rem;
+}
+
+button[type=submit] {
+    background-color: transparent;
+    border: 0;
+    padding: 0.3rem;
+    margin-right: 0.2rem;
+}
+body {
+    background-image: url("/static/arcanaryze.jpeg");
+    background-repeat: no-repeat;
+    background-position: top;
+    background-size: cover;
+}
+@media screen and (max-width:600px) {
+            body {
+                background-image: url("/static/arcanaryzeloading.png");
+            }
+        }
+        .content {
+            margin-top: 10rem;
+            text-shadow: 0.2rem 0.2rem black;
+        }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div id=overall>
+    <img src="data:image/png;base64,{{summoner.summonerOverall.iconImage}}"/>
+    {%for each in summoner.games%}
+    <p>{{each['championName']}}</p>
+    {% endfor %}
+</div>
+
+{% endblock %}

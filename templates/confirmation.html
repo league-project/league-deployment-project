@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %} Added to list {% endblock %}
+{% block style %}
+    <style>
+        body {
+            background-image: url("/static/crabgot.png");
+            background-repeat: no-repeat;
+            background-position: top;
+            background-size: cover;
+        }
+        @media screen and (max-width:600px) {
+            body {
+                background-image: url("/static/crabgotloading.png");
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="confirmed">
+        <h2> You have been added to the rotation watch list</h2>
+        <p>Please keep an eye on your spam e-mail.
+            Our e-mails tend to be delivered to your inbox but in some cases they might be flagged as spam.</p>
+    </div>
+{% endblock content  %}

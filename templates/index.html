@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block title %} Home {% endblock %}
+{% block style %}
+<style>
+.searchsubmit {
+    width:1rem;
+    height: 1rem;
+    padding: 0.1rem;
+    margin: 0;
+}
+
+select {
+    background-color: #e70c50;
+    border-radius: 2rem 0 0 2rem;
+    margin-right: -0.3rem;
+    border: 0.2rem solid cyan;
+    border-right: 0;
+}
+#summoner {
+    background-color: #e70c50;
+    border: 0.2rem solid cyan;
+    border-left: 0.1rem solid whitesmoke;
+    border-radius: 0 2rem 2rem 0;
+}
+
+#summsearch {
+    margin-top: 10rem;
+}
+
+button[type=submit] {
+    background-color: transparent;
+    border: 0;
+    padding: 0.3rem;
+    margin-right: 0.2rem;
+}
+body {
+    background-image: url("/static/arcanaryze.jpeg");
+    background-repeat: no-repeat;
+    background-position: top;
+    background-size: cover;
+}
+@media screen and (max-width:600px) {
+            body {
+                background-image: url("/static/arcanaryzeloading.png");
+            }
+        }
+        .content {
+            margin-top: 10rem;
+            text-shadow: 0.2rem 0.2rem black;
+        }
+
+</style>
+{% endblock %}
+
+{% block content %}
+
+
+    <script defer>
+        function redirectToSummoner() {
+            const region = document.getElementById("region").value;
+            const user = document.getElementById("summoner").value;
+            window.location.href = "/summoner/" + encodeURIComponent(region) + "/" + encodeURIComponent(user);
+        }
+    </script>
+    <form id="summsearch" onsubmit="event.preventDefault(); redirectToSummoner()"> <div class="searchbar">
+        <label for="summoner" class="hidden">Summoner Name:</label> <br>
+        <select id="region" class="cursor">
+            <option value="euw1" selected>EUW</option>
+            <option value="eun1">EUNE</option>
+            <option value="br1">BR</option>
+            <option value="ru">RUS</option>
+            <option value="na1">NA</option>
+            <option value="la1">LAN</option>
+            <option value="la2">LAS</option>
+            <option value="oc1">OCE</option>
+            <option value="tr1">TUR</option>
+            <option value="jp1">JAP</option>
+            <option value="kr1">KOR</option>
+            <option value="ph2">PH</option>
+            <option value="sg2">SG</option>
+            <option value="tw2">TW</option>
+            <option value="th2">TH</option>
+            <option value="vn2">VN</option>
+        </select>
+        <div style="position: relative; display: inline-block;">
+        <input type="search" id="summoner" name="summoner" placeholder="Summoner Name" class="cursor" required style="padding-right: 40px;">
+        <button type="submit" class="cursor" style="position: absolute; top: 0; right: 0;"><img class="searchsubmit" src="https://cdn-icons-png.flaticon.com/512/711/711319.png" alt="Submit Button"></button>
+    </div>
+
+    </div></form>
+
+{% endblock %}

@@ -2,6 +2,7 @@ import datetime
 import requests
 from dotenv import dotenv_values 
 from pymongo import MongoClient
+import base64
 array = [0,1,2,4,5,6,7,8]
 class Search:
     riotSession = None
@@ -15,17 +16,17 @@ class Search:
             path = "/".join(path[5:])
             image = Search.dSession.get("https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/perk-images/"+path)
             if image.status_code == 200:
-                Search.imageDB['runes'].insert_one({'id':rune['id'],"image":image.content})
+                Search.imageDB['runes'].insert_one({'id':rune['id'],"image":base64.b64encode(image.content).decode("UTF-8")})
         Search.imageDB['item'].delete_many({})
         for id in Search.itemsObject['data']:
             image = Search.dSession.get(f"http://ddragon.leagueoflegends.com/cdn/{Search.patch}/img/item/{id}.png")
             if image.status_code == 200:
-                Search.imageDB['item'].insert_one({'id':id , 'image' : image.content})
+                Search.imageDB['item'].insert_one({'id':id , 'image' : base64.b64encode(image.content).decode("UTF-8")})
         Search.imageDB['champIcon'].delete_many({})
         for id in Search.champObject['data']:
             image = Search.dSession.get(f"http://ddragon.leagueoflegends.com/cdn/{Search.patch}/img/champion/{id}.png")
             if image.status_code == 200:
-                Search.imageDB['champIcon'].insert_one({'id':id.lower() , 'image' : image.content})
+                Search.imageDB['champIcon'].insert_one({'id':id.lower() , 'image' : base64.b64encode(image.content).decode("UTF-8")})
             else:
                 print(id)
         Search.imageDB['summonerSpells'].delete_many({})
@@ -33,12 +34,12 @@ class Search:
             path = spell["iconPath"].lower().split("/")
             image = Search.dSession.get("https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/data/spells/icons2d/"+path[len(path)-1])
             if image.status_code == 200:
-                Search.imageDB['summonerSpells'].insert_one({'id':spell['id'],"image":image.content})
+                Search.imageDB['summonerSpells'].insert_one({'id':spell['id'],"image":base64.b64encode(image.content).decode("UTF-8")})
     
     @staticmethod
     def start_up():
         config = dotenv_values(".env")
-        mongo = MongoClient(config["ATLAS_URL"])
+        mongo = MongoClient(config["MONGO_URL"])
         appData = mongo["data"]
         riotSess = requests.session()
         riotSess.headers.update({'X-RIOT-TOKEN':config['API_KEY']})
@@ -69,7 +70,7 @@ class Search:
 
     def search (self):
         x=datetime.datetime.now()
-        obj =  self.getNextGames(),self.summonerObject,self.rankedStats,(datetime.datetime.now()-x).total_seconds()
+        obj =  {"games":self.getNextGames(),"summonerOverall":self.summonerObject,"rankedStats":self.rankedStats}
         return obj
     
     def insertMatch(self,data):
@@ -96,7 +97,8 @@ class Search:
         if(type != self.type):
             self.type = type
             self.matchesGotten = 0 
-        self.matchList = self.getMatchesArray(self.matchesGotten+20,20,self.type)
+        self.matchList = self.getMatchesArray(self.matchesGotten,20,self.type)
+        self.matchesGotten += 20
         self.fullMatchObjects = self.getMatchInfo()
         self.keyMatchInfo =  self.getFullSummonerStatsForMatch()
         return self.getSpecificSummonerStats()
@@ -263,7 +265,7 @@ class Search:
     def summonerIcon(self,id):
         if id not in Search.summonerIcons.keys():
             image = Search.dSession.get(f"http://ddragon.leagueoflegends.com/cdn/{Search.patch}/img/profileicon/{id}.png").content
-            Search.summonerIcons.update({id:image})
+            Search.summonerIcons.update({id:base64.b64encode(image).decode("UTF-8")})
         return Search.summonerIcons[id]
     
     # def allImageDownloader(self,redownload,overwrite=False):
