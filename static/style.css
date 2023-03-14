@@ -33,22 +33,9 @@
         .cursor {
             cursor: url(https://i.imgur.com/rY9MvVg.png) 0 0, auto;
         }
-        button[type=submit] {
-            border: #e70c50 solid 0.2rem;
-            border-radius: 1rem;
-            font-size: medium;
-            padding: 0.5rem;
-            background-color: #1a1f23;
-        }
-        button[type=submit]:hover{
-            background-color: #9ade59;
-        }
-        button[type=submit]:active{
-            transform: translateY(4px);
-            background-color: rgba(127, 255, 0, 0.94);
-        }
+
         ::placeholder {
-            color: gray;
+            color: rgba(245, 245, 245, 0.7);
         }
         input[type=text] {
             background-color: transparent;
