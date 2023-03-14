@@ -33,24 +33,28 @@ rota_names = []
 def id_assigner():
     for each in champ_data:
         if champ_data[each]["key"] in champ_ids:
-            rota_names.append(champ_data[each]["id"])
+            rota_names.append(champ_data[each]["name"])
 
 
 id_assigner()
+print(rota_names)
 
 
 def rota_vs_watchlist(wl):
     watchlist_match = []
     for each in wl:
+        each = each.strip()
         if each in rota_names:
             watchlist_match.append(each)
-
     return watchlist_match
 
 
 def payload_gen(champions):
     # MIME has different multiparts with different usages, multipart alternative tries to load the last first and if
     # that doesn't work, it tries to load the other part
+
+    if not champions or champions is None:
+        return None
     message = MIMEMultipart("alternative")
     message["Subject"] = "Free week rotation alert"
     message["From"] = config["SMTP_EMAIL"]
@@ -70,7 +74,6 @@ def payload_gen(champions):
         champions = "".join(champions)
     else:
         verb = "are"
-        # champions = ", ".join(champions)
         champions = ", ".join(champions).rsplit(",", 1)
         champions = " and".join(champions)
 
@@ -135,15 +138,10 @@ def send_mail(message, receiver_email):
 
 def run_mail_feature(recipient, wl):
     match = rota_vs_watchlist(wl)
-    if match is None:
-        return None  # No need to keep going as there aren't any matches
+    if not match:
+        return False  # No need to keep going as there aren't any matches
     payload = payload_gen(match)
+    if payload is None:
+        return None
     send_mail(payload, recipient)
     return wl_adjusting(wl, match)
-
-
-# pay = payload_gen(["Diana", " Ziggs", " Cho'Gath", " Aatrox"])
-# pay2 = payload_gen(["Tristana", " Udyr"])
-# print(pay)
-# send_mail(pay, "preston.harry2003@gmail.com")
-# send_mail(pay2, "preston.harry2003@gmail.com")
