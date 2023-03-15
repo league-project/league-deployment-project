@@ -62,10 +62,13 @@
             padding-bottom: 0.2rem;
             border: #e70c50 solid 0.2rem;
         }
-
+        button[type=submit]{
+            background-color:  #43464B ;
+            border-radius: 0.2rem;
+        }
         @media screen and (max-width:600px) {
             input[type=text] {
-                width:80%;
+                width:70%;
             }
         }
 

@@ -3,6 +3,7 @@ import requests
 from dotenv import dotenv_values 
 from pymongo import MongoClient
 import base64
+import math
 array = [0,1,2,4,5,6,7,8]
 class Search:
     riotSession = None
@@ -22,6 +23,7 @@ class Search:
             image = Search.dSession.get(f"http://ddragon.leagueoflegends.com/cdn/{Search.patch}/img/item/{id}.png")
             if image.status_code == 200:
                 Search.imageDB['item'].insert_one({'id':id , 'image' : base64.b64encode(image.content).decode("UTF-8")})
+
         Search.imageDB['champIcon'].delete_many({})
         for id in Search.champObject['data']:
             image = Search.dSession.get(f"http://ddragon.leagueoflegends.com/cdn/{Search.patch}/img/champion/{id}.png")
@@ -102,6 +104,7 @@ class Search:
         self.fullMatchObjects = self.getMatchInfo()
         self.keyMatchInfo =  self.getFullSummonerStatsForMatch()
         return self.getSpecificSummonerStats()
+        
     
     def getItemName(self,id):
         try:
@@ -132,7 +135,7 @@ class Search:
         for id in statObject.values():
             for rune in Search.runesObject:
                 if rune['id'] == id:
-                    list.append({id:rune['name']})
+                    list.append({"id":id , "name":rune['name']})
         return list
     def getPrimaryRuneName(self,styleList):
         list = []
@@ -169,8 +172,13 @@ class Search:
         list = []
         try:
             for gameMode in rankedWins:
+                if gameMode['queueType'] =='RANKED_SOLO_5x5':
+                    Type = "Ranked Solo/Duo"
+                elif gameMode['queueType'] =='RANKED_FLEX_SR':
+                    Type = "Ranked Flex"
                 list.append({
-                        "QueueType" : gameMode['queueType'],
+                        "QueueType" : Type,
+                        "Tier" : gameMode['tier'],
                         "Rank":f"{gameMode['tier']} {gameMode['rank']} {gameMode['leaguePoints']}LP",
                         "Total Games" : gameMode['wins'] + gameMode['losses'],
                         "Wins" : gameMode['wins'],
@@ -206,11 +214,21 @@ class Search:
         for match in self.fullMatchObjects:
             try:
                 list1 = []
+                summonerIcons = []
                 for player in match['info']['participants']:
-                    list1.append({
-                        "matchDuration" : match['info']['gameDuration'],
+                    summonerIcons.append({
                         "summonerName" : player['summonerName'],
                         "championName" : player['championName'],
+                        "champIcon" : self.getChampIcon(player['championName'].lower())
+                        })
+                for player in match['info']['participants']:
+                    list1.append({
+                        "players" : summonerIcons,
+                        "matchDuration" : f"{math.trunc(match['info']['gameDuration']/60)}m {round((match['info']['gameDuration']/60 - math.trunc(match['info']['gameDuration']/60))*60,0)}s",
+                        "summonerName" : player['summonerName'],
+                        "championName" : player['championName'],
+                        "spell1" : self.getSummonerSpell(player['summoner1Id']),
+                        "spell2" : self.getSummonerSpell(player['summoner2Id']),
                         "champIcon" : self.getChampIcon(player['championName'].lower()),
                         "kills" : player['kills'],
                         "deaths" : player['deaths'],
@@ -229,6 +247,8 @@ class Search:
                         "runeStats": self.getStatName(player['perks']['statPerks']),
                         "primaryRunes": self.getPrimaryRuneName(player['perks']['styles']),
                         "secondaryRunes": self.getSecondaryRuneName(player['perks']['styles']),
+                        "totalTeamKills" : match['info']['teams'][(player['teamId']//100) - 1 ]['objectives']['champion']['kills'],
+                        "kp" : math.trunc(round(((player['kills']+player['assists'])/match['info']['teams'][(player['teamId']//100) - 1 ]['objectives']['champion']['kills']) * 100,0)),
                         "win" : player['win']
                         })
                 list.append(list1)
@@ -244,11 +264,11 @@ class Search:
                     for item in player['items']:
                         item.update({'image':self.getItemImage(item['id'])})
                     for stat in player['runeStats']:
-                        stat.update({'image':self.getItemImage(item['id'])})
+                        stat.update({'image':self.getRuneImage(stat['id'])})
                     for prune in player['primaryRunes']:
-                        prune.update({'image':self.getItemImage(item['id'])})
+                        prune.update({'image':self.getRuneImage(prune['id'])})
                     for srune in player['secondaryRunes']:
-                        srune.update({'image':self.getItemImage(item['id'])})
+                        srune.update({'image':self.getRuneImage(srune['id'])})
                     list.append(player)
         return list
 
@@ -268,19 +288,11 @@ class Search:
             Search.summonerIcons.update({id:base64.b64encode(image).decode("UTF-8")})
         return Search.summonerIcons[id]
     
-    # def allImageDownloader(self,redownload,overwrite=False):
-    #     directories = ['profileIcons','champIcons','items','runes','spells']
-    #     for folder in directories:
-    #         try:
-    #             os.makedirs(f'./images/{folder}',exist_ok=overwrite)
-    #         except FileExistsError:
-    #             continue
-    #     if(redownload):
-    #         for id in Search.itemsObject['data']:
-    #             with open(f'./images/items/{id}.png','wb') as f:
-    #                 f.write(self.getItemImage(id).content)
-    #                 f.close()
-
+    def getSummonerSpell(self,id):
+        if id not in Search.summonerSpellImages.keys():
+             image = Search.imageDB['summonerSpells'].find_one({"id":id},{"_id":0})
+             Search.summonerSpellImages.update({id:image['image']})
+        return Search.summonerSpellImages[id]
 
     
 
