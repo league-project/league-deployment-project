@@ -1,16 +1,16 @@
 import smtplib
 import ssl
-from dotenv import dotenv_values
+import os
 import requests
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-config = dotenv_values(".env")
+
 
 port = 587  # For SSL
-password = config["SMTP_PASS"]
+password = os.getenv("SMTP_PASS")
 
-sender_email = config["SMTP_EMAIL"]
+sender_email = os.getenv("SMTP_EMAIL")
 
 # Create a secure SSL context
 context = ssl.create_default_context()
@@ -19,7 +19,7 @@ version = requests.get("https://ddragon.leagueoflegends.com/api/versions.json")
 current = version.json()[0]
 champ_url = f"https://ddragon.leagueoflegends.com/cdn/{current}/data/en_US/champion.json"
 
-fwrota = f"https://euw1.api.riotgames.com/lol/platform/v3/champion-rotations?api_key={config['API_KEY']}"
+fwrota = f"https://euw1.api.riotgames.com/lol/platform/v3/champion-rotations?api_key={os.getenv('API_KEY')}"
 # print(requests.get(fwrota).json())
 champ_ids = requests.get(fwrota).json()["freeChampionIds"]
 # Champion ids come from fw rota as ints but are nums in DDragon
@@ -57,7 +57,7 @@ def payload_gen(champions):
         return None
     message = MIMEMultipart("alternative")
     message["Subject"] = "Free week rotation alert"
-    message["From"] = config["SMTP_EMAIL"]
+    message["From"] = os.getenv("SMTP_EMAIL")
 
     urls = []
 
