@@ -102,7 +102,8 @@ class Search:
         self.matchesGotten += 20
         self.fullMatchObjects = self.getMatchInfo()
         self.keyMatchInfo =  self.getFullSummonerStatsForMatch()
-        return self.getSpecificSummonerStats()
+        s = self.getSpecificSummonerStats()
+        return s
         
     
     def getItemName(self,id):
@@ -170,6 +171,7 @@ class Search:
         rankedWins =  Search.riotSession.get(f"https://{self.server}.api.riotgames.com/lol/league/v4/entries/by-summoner/{self.summonerObject['id']}").json()
         list = []
         try:
+            Type = ""
             for gameMode in rankedWins:
                 if gameMode['queueType'] =='RANKED_SOLO_5x5':
                     Type = "Ranked Solo/Duo"
@@ -196,7 +198,6 @@ class Search:
         for matchID in self.matchList:
             search = Search.matchData.find_one({"metadata.matchId":matchID},{"_id":0}) 
             if(search == None):
-                print('calling api')
                 match = self.riotSession.get(f"https://{self.region}.api.riotgames.com/lol/match/v5/matches/{matchID}")
                 if(match.status_code == 200):
                     self.insertMatch(match.json())
@@ -211,6 +212,7 @@ class Search:
     def getFullSummonerStatsForMatch(self):
         list = []
         for match in self.fullMatchObjects:
+            print("made it 214")
             try:
                 list1 = []
                 summonerIcons = []
@@ -223,6 +225,7 @@ class Search:
                 for player in match['info']['participants']:
                     list1.append({
                         "players" : summonerIcons,
+                        "puuid" : player['puuid'],
                         "matchDuration" : f"{math.trunc(match['info']['gameDuration']/60)}m {round((match['info']['gameDuration']/60 - math.trunc(match['info']['gameDuration']/60))*60,0)}s",
                         "summonerName" : player['summonerName'],
                         "championName" : player['championName'],
@@ -252,6 +255,7 @@ class Search:
                         })
                 list.append(list1)
             except KeyError:
+                print("error")
                 return f"Match Object request did not have a 200 it had a {match['status_code']}"
         return list 
 
@@ -259,7 +263,7 @@ class Search:
         list = []
         for match in self.keyMatchInfo:
             for player in match:
-                if(player['summonerName'] == self.summonerName):
+                if(player['puuid'] == self.summonerObject['puuid']):
                     for item in player['items']:
                         item.update({'image':self.getItemImage(item['id'])})
                     for stat in player['runeStats']:
