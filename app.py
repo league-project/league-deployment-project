@@ -29,8 +29,8 @@ def confirm():
 
 @app.get("/summoner/<region>/<nick>")
 def get_summoner_data(region, nick):
-    summoner = Search(region,nick)
-    return render_template("summoner.html",summoner=summoner.search())
+    if request.method == "GET":
+        return render_template("summoner.html",summoner=Search(region,nick))
 
 
 @app.get("/404/")
