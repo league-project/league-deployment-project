@@ -1,8 +1,10 @@
 from flask import Flask, request, render_template
+import base64
 from db import db_inserts
+from search import Search
 
 app = Flask(__name__)
-
+Search.start_up()
 
 @app.route("/", methods=("GET", "POST"))
 def index():
@@ -27,7 +29,8 @@ def confirm():
 
 @app.get("/summoner/<region>/<nick>")
 def get_summoner_data(region, nick):
-    return ""
+    if request.method == "GET":
+        return render_template("summoner.html",summoner=Search(region,nick))
 
 
 @app.get("/404/")

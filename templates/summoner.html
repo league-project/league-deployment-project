@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+{% block title %} Home {% endblock %}
+{% block style %}
+<style>
+.searchsubmit {
+    width:1rem;
+    height: 1rem;
+    padding: 0.1rem;
+    margin: 0;
+}
+
+select {
+    background-color: #e70c50;
+    border-radius: 2rem 0 0 2rem;
+    margin-right: -0.3rem;
+    border: 0.2rem solid cyan;
+    border-right: 0;
+}
+#summoner {
+    background-color: #e70c50;
+    border: 0.2rem solid cyan;
+    border-left: 0.1rem solid whitesmoke;
+    border-radius: 0 2rem 2rem 0;
+}
+
+#summsearch {
+    margin-top: 10rem;
+}
+
+button[type=submit] {
+    background-color: transparent;
+    border: 0;
+    padding: 0.3rem;
+    margin-right: 0.2rem;
+}
+body {
+    background-image: url("/static/arcanaryze.jpeg");
+    background-repeat: no-repeat;
+    background-position: top;
+    background-size: cover;
+}
+@media screen and (max-width:600px) {
+            body {
+                background-image: url("/static/arcanaryzeloading.png");
+            }
+        }
+#rank {
+    background-color: grey;
+}
+#overall{
+    display: flex;
+    flex-direction: column;
+    margin: 1%;
+    flex-wrap: wrap;
+}
+.match-True{
+    background-color: #3CD070;
+    display: flex;
+    flex-direction: row;
+    padding: 1rem;
+    border:1rem;
+    margin:2rem;
+ 
+    
+}
+.match-False{
+    background-color: #FD0E35;
+    display: flex;
+    flex-direction: row;
+    padding: 1rem;
+    border:1rem;
+    margin:2rem;
+    
+}
+.match{
+    margin-left: 2rem;
+    width:10%;
+}
+.content{
+    text-shadow: 0 0 transparent;
+    margin-top: 10rem;
+    display: flex;
+    flex-direction: row;
+    border: 1rem;
+    justify-content: space-evenly;
+}
+#matches{
+    width: 70%;
+    margin: 1%;
+}
+#runes{
+    display: flex;
+    flex-direction: column;
+}
+.rune{
+    display: flex;
+    flex-direction: row;
+    justify-content:left;
+}
+.primaryRunes{
+    width:3rem;
+}
+.secondaryRunes{
+    width:2.5rem;
+}
+.champImage{
+    display: flex;
+    flex-direction: column;
+}
+.spells{
+    display: flex;
+    flex-direction: row;
+}
+#teams{
+    display: flex;
+    flex-direction: row;
+}
+.Team{
+    display:flex;
+    flex-direction: column;
+}
+.playerIcons{
+    width:50%;
+    border-radius: 3rem;
+}
+#items{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width:70%;
+}
+.item{
+    border-radius: 2rem;
+}
+#itemsrunes{
+    width:50%;
+    margin-left:2rem;
+}
+.runeStats{
+    padding-left: 0.5rem;
+    width :2rem;
+}
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div id=overall>
+    {% set s = summoner.search() %}
+    <div id="soverall">
+        <img src="data:image/png;base64,{{s.summonerOverall.iconImage}}"/>
+        <p>{{s.summonerOverall.name}}</p>
+        <p>Level {{s.summonerOverall.summonerLevel}}</p>
+    </div>
+    <section id="ranks">
+    {% for mode in s.rankedStats %}
+    <div class="rank">
+        <img class="rankImage" src="/static/ranks/{{mode.Tier.lower()}}.png"/>
+        <p>{{mode.QueueType}}</p>
+        <p>{{mode.Rank}}</p>
+    </div>
+    {% endfor %}
+    </section>
+</div>
+<section id="matches">
+    {% for match in s.games %}
+    <div class="match-{{match.win}}">
+        <div class="champImage">
+            <img src="data:image/png;base64,{{match.champIcon}}"/>
+            <div class="spells">
+                <img src="data:image/png;base64,{{match.spell1}}"/>
+                <img src="data:image/png;base64,{{match.spell2}}"/>
+            </div>
+        </div>
+        <div class="match">
+           <p>Duration: {{match.matchDuration}}</p>
+           <p>{{match.kills}}/{{match.deaths}}/{{match.assists}}</p>
+           <p>CS {{match.creepScore}}</p>
+           <p>KP {{match.kp}} %</p>
+        </div>
+        <section id="itemsrunes">
+            <div id="runes">
+                <div class="rune">
+                    {% for rune in match.primaryRunes%}
+                    <img class=primaryRunes src="data:image/png;base64,{{rune.image}}"/>
+                    {% endfor %}
+                </div>
+                <div class="rune">
+                    {% for rune in match.secondaryRunes%}
+                    <img class=secondaryRunes src="data:image/png;base64,{{rune.image}}"/>
+                    {% endfor %}
+                    {% for rune in match.runeStats%}
+                    <img class=runeStats src="data:image/png;base64,{{rune.image}}"/>
+                    {% endfor %}
+                </div>
+            </div>
+            <div id="items">
+                {% for item in match['items'] %}
+                    {% if item['image'] != 'None' %}
+                        <img class="item" src="data:image/png;base64,{{item['image']}}"/>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </section>
+        <section id="teams">
+            <div id="myTeam" class = "Team">
+                {% for player in match['players'][0:5] %}
+                    <img class="playerIcons" src="data:image/png;base64,{{player.champIcon}}"/>
+                {% endfor %}
+            </div>
+            <div id="otherTeam" class="Team">
+                {% for player in match['players'][5:10] %}
+                    <img class="playerIcons" src="data:image/png;base64,{{player.champIcon}}"/>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+    {% endfor %}
+</section>
+
+{% endblock %}
