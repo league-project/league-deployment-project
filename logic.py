@@ -98,7 +98,7 @@ def payload_gen(champions):
             <div class="images" style="margin:1rem">
             {x}
             </div>
-            <p style="margin:6rem; color:white">Hey, this is a reminder from LossGBT that <strong>{champions}</strong>
+            <p style="margin:6rem; color:white">Hey, this is a reminder from LoLRegret that <strong>{champions}</strong>
              {verb} currently in the free week rotation!</p> 
              <br> 
              <p style="color:white">Enjoy your time in the rift Summoner</p> 
@@ -109,7 +109,7 @@ def payload_gen(champions):
     message_txt = f"""\
         Subject: Free Week Rotation
 
-        Hey, this is a reminder from LossGBT that {champions} {verb} currently in the free week rotation!
+        Hey, this is a reminder from LoLRegret that {champions} {verb} currently in the free week rotation!
 
         Enjoy your time in the rift Summoner"""
 
