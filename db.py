@@ -1,10 +1,9 @@
 import pymongo
-from dotenv import dotenv_values
+import os
 from logic import run_mail_feature
 
-config = dotenv_values(".env")
 
-mongo_url = config["MONGO_URL"]
+mongo_url = os.getenv("MONGO_URL")
 client = pymongo.MongoClient(mongo_url)
 db = client["data"]
 col = db["emails"]

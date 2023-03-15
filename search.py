@@ -1,6 +1,6 @@
 import datetime
 import requests
-from dotenv import dotenv_values 
+import os
 from pymongo import MongoClient
 import base64
 import math
@@ -40,11 +40,10 @@ class Search:
     
     @staticmethod
     def start_up():
-        config = dotenv_values(".env")
-        mongo = MongoClient(config["MONGO_URL"])
+        mongo = MongoClient(os.getenv("MONGO_URL"))
         appData = mongo["data"]
         riotSess = requests.session()
-        riotSess.headers.update({'X-RIOT-TOKEN':config['API_KEY']})
+        riotSess.headers.update({'X-RIOT-TOKEN':os.getenv('API_KEY')})
         Search.riotSession = riotSess
         Search.dSession = requests.session()
         Search.mongo = mongo
