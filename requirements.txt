@@ -2,3 +2,4 @@ Flask-PyMongo
 requests
 python-dotenv
 pre-commit
+guicorn
