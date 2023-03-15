@@ -1,6 +1,6 @@
 from flask import Flask, request, render_template
 import base64
-import
+import os
 from db import db_inserts
 from search import Search
 
