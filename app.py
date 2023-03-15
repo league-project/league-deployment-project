@@ -36,3 +36,6 @@ def get_summoner_data(region, nick):
 @app.get("/404/")
 def test404():
     return render_template("404.html")
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0')
