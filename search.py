@@ -185,7 +185,7 @@ class Search:
                         })
             return list
         except:
-            raise Exception(rankedWins.status.message)
+            raise Exception(rankedWins)
 
     def getMatchesArray(self,start,count,type):
         self.matchesGotten += count
